@@ -17,3 +17,7 @@ spring:
   sql:
     init:
       encoding: utf-8
+
+jwt:
+  issuer: ajufresh@gmail.com
+  secret_key: study-springboot
