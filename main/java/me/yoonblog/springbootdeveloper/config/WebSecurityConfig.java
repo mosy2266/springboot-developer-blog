@@ -1,4 +1,4 @@
-package me.yoonblog.springbootdeveloper.config;
+/*package me.yoonblog.springbootdeveloper.config;
 
 import lombok.RequiredArgsConstructor;
 import me.yoonblog.springbootdeveloper.service.UserDetailService;
@@ -70,3 +70,4 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+*/

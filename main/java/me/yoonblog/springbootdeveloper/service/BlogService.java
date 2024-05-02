@@ -6,6 +6,7 @@ import me.yoonblog.springbootdeveloper.domain.Article;
 import me.yoonblog.springbootdeveloper.dto.AddArticleRequest;
 import me.yoonblog.springbootdeveloper.dto.UpdateArticleRequest;
 import me.yoonblog.springbootdeveloper.repository.BlogRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,9 +17,10 @@ public class BlogService {
     private final BlogRepository blogRepository;
 
     //블로그 글 추가 메서드
-    public Article save(AddArticleRequest request) {
+    //toEntity()의 인수로 전달받은 유저 이름을 반환
+    public Article save(AddArticleRequest request, String userName) {
         //save() -> JpaRepository에서 지원, AddArticleRequest 클래스에 저장된 값들을 article 데이터베이스에 저장
-        return blogRepository.save(request.toEntity());
+        return blogRepository.save(request.toEntity(userName));
     }
 
     //블로그 글 목록 조회 메서드
@@ -34,7 +36,11 @@ public class BlogService {
 
     //블로그 글 삭제 메서드
     public void delete(long id) {
-        blogRepository.deleteById(id);
+        Article article = blogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
+
+        authorizeArticleAuthor(article);
+        blogRepository.delete(article);
     }
 
     //블로그 글 수정 메서드
@@ -43,8 +49,17 @@ public class BlogService {
         Article article = blogRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
 
+        authorizeArticleAuthor(article);
         article.update(request.getTitle(), request.getContent());
 
         return article;
+    }
+
+    //게시글을 작성한 유저인지 확인
+    private static void authorizeArticleAuthor(Article article) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!article.getAuthor().equals(userName)) {
+            throw new IllegalArgumentException("not authorized");
+        }
     }
 }
